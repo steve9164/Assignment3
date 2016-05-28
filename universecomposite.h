@@ -4,6 +4,8 @@
 #include "universecomponent.h"
 #include <string>
 #include <vector>
+#include <memory>
+#include <utility>
 
 
 class UniverseComposite : public UniverseComponent {
@@ -13,10 +15,10 @@ public:
             UniverseComponentType type,
             const std::string& name,
             const std::string& parentName = "");
-    virtual ~UniverseComposite();
+    virtual ~UniverseComposite() { }
 
     //build up the composition
-    virtual void add(UniverseComponent* component) { m_children.push_back(component); }
+    virtual void add(std::unique_ptr<UniverseComponent> component) { m_children.push_back(std::move(component)); }
 
     /*********************************************
      * Inherited methods from UniverseComponent
@@ -38,7 +40,7 @@ public:
     void convertRelativeToAbsolute(double xp, double yp, double xv, double yv);
 
 private:
-    std::vector<UniverseComponent*> m_children;
+    std::vector<std::unique_ptr<UniverseComponent>> m_children;
 
     //used only to enable construction of the universe with relative positions
     double m_xVelocity;

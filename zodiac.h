@@ -15,11 +15,11 @@ public:
     virtual void render(QPainter &painter) const;
 
     //add a line to the zodiac, between the given bodies
-    virtual void add(UniverseBody* from, UniverseBody* to);
+    virtual void add(UniverseBody& from, UniverseBody& to);
 
 private:
     //list of stored lines
-    std::list<std::pair<UniverseBody*, UniverseBody*> > lines;
+    std::list<std::pair<UniverseBody&, UniverseBody&>> lines;
 
 };
 

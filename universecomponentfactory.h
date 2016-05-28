@@ -18,19 +18,19 @@ public:
     //This is what's known as a "Parameterised factory method"
     //It decides which class to create based on the parameter passed in
     //It also handles the construction of the complex object, like a Builder
-    virtual UniverseComponent* createUniverseComponent(
+    virtual std::unique_ptr<UniverseComponent> createUniverseComponent(
             const std::unordered_map<std::string, std::string>& block) const;
 
 private:
     //Create a leaf type (planet, star, blackhole)
-    virtual UniverseComponent* createLeaf(
+    virtual std::unique_ptr<UniverseComponent> createLeaf(
             const std::unordered_map<std::string, std::string>& block,
             const std::string& name,
             const std::string& parentName,
             UniverseComponentType type) const;
 
     //Create a composite type (cluster, galaxy, solarsystem)
-    virtual UniverseComponent* createComposite(
+    virtual std::unique_ptr<UniverseComponent> createComposite(
             const std::unordered_map<std::string, std::string>& block,
             const std::string& name,
             const std::string& parentName,

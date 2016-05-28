@@ -54,8 +54,8 @@ private:
     bool m_renderZodiacs; //should Zodiacs be rendered?
     bool m_renderLabels; //should labels be rendered?
     long m_timestamp; //simulation time since simulation start
-    UniverseComponent* m_universe; //The universe
-    std::list<Zodiac>* m_zodiacs; //Vector of zodiac lines
+    std::unique_ptr<UniverseComponent> m_universe; //The universe
+    std::list<Zodiac> m_zodiacs; //Vector of zodiac lines
     Config* m_config; //the singleton config instance
 
 };

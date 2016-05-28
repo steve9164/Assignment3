@@ -57,8 +57,6 @@ Dialog::~Dialog()
     delete m_buttonPause;
     delete m_buttonZodiacs;
     delete m_buttonLabels;
-    delete m_universe;
-    delete m_zodiacs;
 }
 
 void Dialog::toggleZodiacs()
@@ -137,7 +135,7 @@ void Dialog::paintEvent(QPaintEvent *event)
 
     if(m_renderZodiacs)
     {
-        for(auto zodiac : *m_zodiacs)
+        for(auto& zodiac : m_zodiacs)
         {
             zodiac.render(painter);
         }

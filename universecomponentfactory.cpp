@@ -24,7 +24,7 @@ UniverseComponentType UniverseComponentFactory::stringToUniverseComponentType(
     throw invalid_argument(type + " is not a valid UniverseComponent type");
 }
 
-UniverseComponent* UniverseComponentFactory::createUniverseComponent(
+unique_ptr<UniverseComponent> UniverseComponentFactory::createUniverseComponent(
         const unordered_map<string, string>& block) const
 {
     string name;
@@ -94,7 +94,7 @@ double UniverseComponentFactory::getDouble(
     return value;
 }
 
-UniverseComponent* UniverseComponentFactory::createLeaf(
+unique_ptr<UniverseComponent> UniverseComponentFactory::createLeaf(
         const unordered_map<string, string>& block,
         const string& name,
         const string& parentName,
@@ -131,11 +131,11 @@ UniverseComponent* UniverseComponentFactory::createLeaf(
         component->setColor(parseColor(block.at("color")));
     }
 
-    return component;
+    return unique_ptr<UniverseComponent>(component);
 }
 
 
-UniverseComponent* UniverseComponentFactory::createComposite(
+unique_ptr<UniverseComponent> UniverseComponentFactory::createComposite(
         const unordered_map<string, string>& block,
         const string& name,
         const string& parentName,
@@ -152,5 +152,5 @@ UniverseComponent* UniverseComponentFactory::createComposite(
     component->setPosition(position_x, position_y);
     component->setVelocity(velocity_x, velocity_y);
 
-    return component;
+    return unique_ptr<UniverseComponent>(component);
 }
