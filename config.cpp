@@ -198,6 +198,21 @@ void Config::read(const string& path)
     parseSettings();
 }
 
+std::unique_ptr<UniverseComponent> Config::retrieveUniverse()
+{
+    unique_ptr<UniverseComponent> universe(new UniverseComposite(UniverseComponentType::universe, "The Universe"));
+
+    //link the components to their parents (or to the Universe)
+    for(auto& pair : universeComponents)
+    {
+        UniverseComponent& child = *pair.second;
+        UniverseComponent& parent = (child->getParentName() != "") ? *universe : *m_universeComponents.at(child->getParentName());
+        joinComponents(parent, child);
+    }
+
+    return universe;
+}
+
 void Config::parseSettings()
 {
     if(m_settings.count("FRAMES_PER_SECOND") > 0)
@@ -246,15 +261,18 @@ void Config::parseSettings()
         ss >> m_logPointRadius;
         qDebug() << "LOG_POINT" << m_logPointRadius;
     }
+
+    buildUniverse();
+    createZodiacs();
 }
 
 void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
 {
-    switch(parent->getType())
+    switch(parent.getType())
     {
     //allow anything to join to the universe
     case universe:
-        dynamic_cast<UniverseComposite*>(parent)->add(child);
+        dynamic_cast<UniverseComposite&>(parent).add(move(child));
         return;
 
     //allow clusters and galaxies to join to a cluster
@@ -263,7 +281,7 @@ void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
         {
         case cluster:
         case galaxy:
-            dynamic_cast<UniverseComposite*>(parent)->add(child);
+            dynamic_cast<UniverseComposite&>(parent).add(move(child));
             return;
         default:
             break;
@@ -276,7 +294,7 @@ void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
         {
         case solarsystem:
         case blackhole:
-            dynamic_cast<UniverseComposite*>(parent)->add(child);
+            dynamic_cast<UniverseComposite&>(parent).add(move(child));
             return;
         default:
             break;
@@ -290,7 +308,7 @@ void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
         case star:
         case blackhole:
         case planet:
-            dynamic_cast<UniverseComposite*>(parent)->add(child);
+            dynamic_cast<UniverseComposite&>(parent).add(move(child));
             return;
         default:
             break;
@@ -304,35 +322,34 @@ void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
     qDebug() << "ERROR: cannot add ("
              << child->getName().c_str()
              << ") to ("
-             << parent->getName().c_str()
+             << parent.getName().c_str()
              << "). They are the wrong types. Skipping object.";
     return;
 
 }
 
 
-UniverseComponent* Config::parseUniverseBlocks()
+void Config::parseUniverseBlocks()
 {
     UniverseComponentFactory factory;
-    UniverseComponent* universe = new UniverseComposite(
-                UniverseComponentType::universe, "The Universe");
 
-    m_universeComponents.clear();
+
+    std::unordered_map<std::string, unique_ptr<UniverseComponent>> universeComponents;
 
     //create the components
-    for(auto block : m_universeBlocks)
+    for(const auto& block : m_universeBlocks)
     {
         try
         {
-            UniverseComponent* component = factory.createUniverseComponent(block);
-            if(m_universeComponents.count(component->getName()) > 0)
+            unique_ptr<UniverseComponent> component = factory.createUniverseComponent(block);
+            if(universeComponents.count(component->getName()) > 0)
             {
                 qDebug() << "ERROR: name already in use (skipping):" << component->getName().c_str();
 
             }
             else
             {
-                m_universeComponents.insert(make_pair(component->getName(), component));
+                universeComponents.emplace(component->getName(), move(component));
             }
         }
         catch(invalid_argument e)
@@ -348,20 +365,6 @@ UniverseComponent* Config::parseUniverseBlocks()
             qDebug() << "ERROR: skipped an object:" << e.what();
         }
     }
-
-    //link the components to their parents (or to the Universe)
-    for(auto pair : m_universeComponents)
-    {
-        UniverseComponent* child = pair.second;
-        UniverseComponent* parent = universe;
-        if(child->getParentName() != "")
-        {
-            parent = m_universeComponents.at(child->getParentName());
-        }
-        joinComponents(parent, child);
-    }
-
-    return universe;
 }
 
 void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zodiac)
@@ -373,8 +376,8 @@ void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zod
                  << "for zodiac, skipping line";
         return;
     }
-    UniverseComponent* starA = m_universeComponents.at(labelA);
-    switch(starA->getType()) {
+    UniverseComponent& starA = *m_universeComponents.at(labelA);
+    switch(starA.getType()) {
     case star:
     case blackhole:
     case planet:
@@ -392,8 +395,8 @@ void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zod
                  << "for zodiac, skipping line";
         return;
     }
-    UniverseComponent* starB = m_universeComponents.at(labelB);
-    switch(starB->getType()) {
+    UniverseComponent& starB = *m_universeComponents.at(labelB);
+    switch(starB.getType()) {
     case star:
     case blackhole:
     case planet:
@@ -405,14 +408,14 @@ void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zod
     }
 
     //add a line between the two objects, to the zodiac
-    zodiac.add(dynamic_cast<UniverseBody*>(starA),
-               dynamic_cast<UniverseBody*>(starB));
+    zodiac.add(dynamic_cast<UniverseBody&>(starA),
+               dynamic_cast<UniverseBody&>(starB));
 }
 
 
-list<Zodiac>* Config::parseZodiacBlocks()
+void Config::createZodiacs(const std::unordered_map<std::string, UniverseComponent*>& universeComponents)
 {
-    list<Zodiac>* zodiacs = new list<Zodiac>;
+    list<Zodiac> zodiacs;
     //for every block of zodiac defined in the file
     for(auto block : m_zodiacBlocks)
     {
@@ -426,5 +429,5 @@ list<Zodiac>* Config::parseZodiacBlocks()
         //add the finished zodiac
         zodiacs->emplace_back(zodiac);
     }
-    return zodiacs;
+    return move(zodiacs);
 }

@@ -20,10 +20,10 @@ public:
     void read(const std::string& path);
 
     //use the previously read blocks of text to create the components
-    UniverseComponent* parseUniverseBlocks();
+    std::unique_ptr<UniverseComponent> retrieveUniverse();
 
     //use the previously read text, and created components, to build the zodiacs
-    std::list<Zodiac>* parseZodiacBlocks();
+    std::list<Zodiac> retrieveZodiacs();
 
     //how many times should the screen update each second
     double getFramesPerSecond() const { return m_framesPerSecond; }
@@ -73,13 +73,15 @@ private:
     //helper method to connect the two named objects in a zodiac
     void addToZodiac(const std::string& labelA, const std::string& labelB, Zodiac& zodiac);
 
+    void parseUniverseBlocks();
+    void createZodiacs(const std::unordered_map<std::string, UniverseComponent*>& universeComponents);
+
     //member variables to store the parsed text
     std::unordered_map<std::string, std::string> m_settings;
     std::list<std::unordered_map<std::string, std::string> > m_universeBlocks;
     std::list<std::list<std::pair<std::string, std::string> > > m_zodiacBlocks;
 
-    //store a map of {name: component}
-    std::unordered_map<std::string, UniverseComponent*> m_universeComponents;
+
 
     double m_framesPerSecond;
     int m_physicsStepSize;

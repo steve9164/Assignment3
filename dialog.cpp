@@ -19,8 +19,8 @@ Dialog::Dialog(QWidget *parent)
     , m_config(Config::getInstance())
 {
     m_config->read("config.txt");
-    m_universe = m_config->parseUniverseBlocks();
-    m_zodiacs = m_config->parseZodiacBlocks();
+    m_universe = m_config->retrieveUniverse();
+    m_zodiacs = m_config->retrieveZodiacs();
     m_universe->convertRelativeToAbsolute(0,0,0,0);
 
     //set backdrop to black
