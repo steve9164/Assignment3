@@ -10,7 +10,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++11
 
-TARGET = Base3
+TARGET = Assignment3
 TEMPLATE = app
 
 
@@ -31,5 +31,3 @@ HEADERS  += dialog.h \
     universecomponentfactory.h
 
 FORMS    += dialog.ui
-
-OTHER_FILES +=
