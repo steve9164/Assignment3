@@ -19,11 +19,11 @@ public:
     //read the given file
     void read(const std::string& path);
 
-    //use the previously read blocks of text to create the components
-    std::unique_ptr<UniverseComponent> retrieveUniverse();
+    //give ownership and control of the universe defined in the config to the caller
+    std::unique_ptr<UniverseComponent> retrieveUniverse() { return move(m_universe); }
 
-    //use the previously read text, and created components, to build the zodiacs
-    std::list<Zodiac> retrieveZodiacs();
+    //move the list of zodiacs to the caller and return the list to a known state
+    std::list<Zodiac> retrieveZodiacs() { return move(m_zodiacs); }
 
     //how many times should the screen update each second
     double getFramesPerSecond() const { return m_framesPerSecond; }
@@ -68,18 +68,22 @@ private:
     bool isKeyValuePair(const std::string& key, const std::string& op, const std::string& value) const;
 
     //helper method to join two components (also checks it's an allowed connection)
-    void joinComponents(UniverseComponent* parent, UniverseComponent* child);
+    void joinComponents(UniverseComponent &parent, std::unique_ptr<UniverseComponent> child);
 
     //helper method to connect the two named objects in a zodiac
-    void addToZodiac(const std::string& labelA, const std::string& labelB, Zodiac& zodiac);
+    void addToZodiac(const std::string& labelA, const std::string& labelB, Zodiac& zodiac, const std::unordered_map<std::string, UniverseComponent&>& references);
 
     void parseUniverseBlocks();
-    void createZodiacs(const std::unordered_map<std::string, UniverseComponent*>& universeComponents);
+    void createZodiacs(const std::unordered_map<std::string, UniverseComponent&>& universeComponents);
 
     //member variables to store the parsed text
     std::unordered_map<std::string, std::string> m_settings;
     std::list<std::unordered_map<std::string, std::string> > m_universeBlocks;
     std::list<std::list<std::pair<std::string, std::string> > > m_zodiacBlocks;
+
+    // built while parsing, and returned by move when "retrieved" to be owned by Dialog
+    std::unique_ptr<UniverseComponent> m_universe;
+    std::list<Zodiac> m_zodiacs;
 
 
 

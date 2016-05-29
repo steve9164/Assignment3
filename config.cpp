@@ -198,21 +198,6 @@ void Config::read(const string& path)
     parseSettings();
 }
 
-std::unique_ptr<UniverseComponent> Config::retrieveUniverse()
-{
-    unique_ptr<UniverseComponent> universe(new UniverseComposite(UniverseComponentType::universe, "The Universe"));
-
-    //link the components to their parents (or to the Universe)
-    for(auto& pair : universeComponents)
-    {
-        UniverseComponent& child = *pair.second;
-        UniverseComponent& parent = (child->getParentName() != "") ? *universe : *m_universeComponents.at(child->getParentName());
-        joinComponents(parent, child);
-    }
-
-    return universe;
-}
-
 void Config::parseSettings()
 {
     if(m_settings.count("FRAMES_PER_SECOND") > 0)
@@ -262,11 +247,10 @@ void Config::parseSettings()
         qDebug() << "LOG_POINT" << m_logPointRadius;
     }
 
-    buildUniverse();
-    createZodiacs();
+    parseUniverseBlocks();
 }
 
-void Config::joinComponents(UniverseComponent* parent, UniverseComponent* child)
+void Config::joinComponents(UniverseComponent& parent, unique_ptr<UniverseComponent> child)
 {
     switch(parent.getType())
     {
@@ -333,8 +317,10 @@ void Config::parseUniverseBlocks()
 {
     UniverseComponentFactory factory;
 
-
-    std::unordered_map<std::string, unique_ptr<UniverseComponent>> universeComponents;
+    // List of built components, ready to be moved into the universe heirarchy
+    list<unique_ptr<UniverseComponent>> universeComponents;
+    // References stored in order to build zodiacs and parent relationships without a strict order
+    unordered_map<string, UniverseComponent&> referencesMap;
 
     //create the components
     for(const auto& block : m_universeBlocks)
@@ -342,14 +328,15 @@ void Config::parseUniverseBlocks()
         try
         {
             unique_ptr<UniverseComponent> component = factory.createUniverseComponent(block);
-            if(universeComponents.count(component->getName()) > 0)
+            if(referencesMap.count(component->getName()) > 0)
             {
                 qDebug() << "ERROR: name already in use (skipping):" << component->getName().c_str();
 
             }
             else
             {
-                universeComponents.emplace(component->getName(), move(component));
+                referencesMap.emplace(component->getName(), *component);
+                universeComponents.push_back(move(component));
             }
         }
         catch(invalid_argument e)
@@ -365,18 +352,37 @@ void Config::parseUniverseBlocks()
             qDebug() << "ERROR: skipped an object:" << e.what();
         }
     }
+    createZodiacs(referencesMap);
+
+    m_universe.reset(new UniverseComposite(UniverseComponentType::universe, "The Universe"));
+
+    //link the components to their parents (or to the Universe)
+    for(auto& child : universeComponents)
+    {
+        if (child->getParentName() != "" && referencesMap.count(child->getParentName()) == 0)
+        {
+            qDebug() << "ERROR: child object " << QString::fromStdString(child->getName())
+                     << " cannot be added to parent "
+                     << QString::fromStdString(child->getParentName());
+        }
+        else
+        {
+            UniverseComponent& parent = (child->getParentName() != "") ? referencesMap.at(child->getParentName()) : *m_universe;
+            joinComponents(parent, move(child));
+        }
+    }
 }
 
-void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zodiac)
+void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zodiac, const unordered_map<string, UniverseComponent&>& references)
 {
     //find the first object, and make sure it's a suitable type
-    if(m_universeComponents.count(labelA) < 1)
+    if(references.count(labelA) < 1)
     {
         qDebug() << "ERROR: couldn't find" << labelA.c_str()
                  << "for zodiac, skipping line";
         return;
     }
-    UniverseComponent& starA = *m_universeComponents.at(labelA);
+    UniverseComponent& starA = references.at(labelA);
     switch(starA.getType()) {
     case star:
     case blackhole:
@@ -389,13 +395,13 @@ void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zod
     }
 
     //find the second object, and make sure it's a suitable type
-    if(m_universeComponents.count(labelB) < 1)
+    if(references.count(labelB) < 1)
     {
         qDebug() << "ERROR: couldn't find" << labelB.c_str()
                  << "for zodiac, skipping line";
         return;
     }
-    UniverseComponent& starB = *m_universeComponents.at(labelB);
+    UniverseComponent& starB = references.at(labelB);
     switch(starB.getType()) {
     case star:
     case blackhole:
@@ -413,9 +419,9 @@ void Config::addToZodiac(const string& labelA, const string& labelB, Zodiac& zod
 }
 
 
-void Config::createZodiacs(const std::unordered_map<std::string, UniverseComponent*>& universeComponents)
+void Config::createZodiacs(const unordered_map<string, UniverseComponent&>& references)
 {
-    list<Zodiac> zodiacs;
+    m_zodiacs.clear();
     //for every block of zodiac defined in the file
     for(auto block : m_zodiacBlocks)
     {
@@ -424,10 +430,9 @@ void Config::createZodiacs(const std::unordered_map<std::string, UniverseCompone
         for(auto pair : block)
         {
             //add the line
-            addToZodiac(pair.first, pair.second, zodiac);
+            addToZodiac(pair.first, pair.second, zodiac, references);
         }
         //add the finished zodiac
-        zodiacs->emplace_back(zodiac);
+        m_zodiacs.push_back(zodiac);
     }
-    return move(zodiacs);
 }
