@@ -8,7 +8,7 @@
 #include <QTimer>
 
 Dialog::Dialog(QWidget *parent)
-    : QDialog(parent)
+    : QOpenGLWidget(parent)
     , ui(new Ui::Dialog)
     , m_width(800)
     , m_height(800)

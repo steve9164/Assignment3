@@ -7,13 +7,14 @@
 #include <QDialog>
 #include <QTimer>
 #include <list>
+#include <QOpenGLWidget>
 
 
 namespace Ui {
 class Dialog;
 }
 
-class Dialog : public QDialog
+class Dialog : public QOpenGLWidget
 {
     Q_OBJECT
 
