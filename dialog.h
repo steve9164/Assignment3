@@ -4,6 +4,7 @@
 #include "config.h"
 #include "universecomponent.h"
 #include "zodiac.h"
+#include "renderer.h"
 #include <QDialog>
 #include <QTimer>
 #include <list>
@@ -33,8 +34,9 @@ private slots:
     void toggleLabels();
 
 private:
+    void initializeGL();
     //method called when the window is being redrawn
-    void paintEvent(QPaintEvent *event);
+    void paintGL();
     //pause (or unpause) the simulation
     void pause(bool pause);
     //handle key presses
@@ -54,10 +56,12 @@ private:
     bool m_paused; //is the simulation paused?
     bool m_renderZodiacs; //should Zodiacs be rendered?
     bool m_renderLabels; //should labels be rendered?
+    bool m_render3d; //should rendering be done in OpenGL 3D?
     long m_timestamp; //simulation time since simulation start
     std::unique_ptr<UniverseComponent> m_universe; //The universe
     std::list<Zodiac> m_zodiacs; //Vector of zodiac lines
     Config* m_config; //the singleton config instance
+    std::unique_ptr<Renderer> m_renderer;
 
 };
 

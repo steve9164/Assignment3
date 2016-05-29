@@ -1,6 +1,8 @@
 #ifndef UNIVERSEBODY_H
 #define UNIVERSEBODY_H
 
+#include <QVector3D>
+
 #include "universecomponent.h"
 
 class UniverseBody : public UniverseComponent
@@ -17,8 +19,8 @@ public:
      * Inherited methods from UniverseComponent
      * *******************************************/
     //render the subtree
-    virtual void render(QPainter &painter) const;
-    virtual void renderLabel(QPainter& painter) const;
+    virtual void render(Renderer& renderer) const;
+    virtual void renderLabel(Renderer& renderer) const;
 
     //apply the attraction from this component, to the specified leaf
     virtual void addAttractionTo(UniverseBody& body) const;
@@ -32,38 +34,27 @@ public:
     //update the positions of all components of this object
     virtual void updatePosition(int timestep);
 
-    //convert the initial (relative) position and velocity, to an absolute one
-    //by translating the position and velocity with the values provided
-    void convertRelativeToAbsolute(double xp, double yp, double xv, double yv) {
-        m_xPosition += xp;
-        m_yPosition += yp;
-        m_xVelocity += xv;
-        m_yVelocity += yv;
-    }
-
 
     /*********************************************
      * Accessor methods
      * *******************************************/
     const QColor& getColor() const { return m_color; }
-    double getPositionX() const { return m_xPosition; }
-    double getPositionY() const { return m_yPosition; }
+    QVector3D getPosition() const { return m_position; }
     double getMass() const { return m_mass; }
+    double getRadius() const { return m_radius; }
 
-    void addForce(double x, double y) { m_xForce += x; m_yForce += y; }
-    void setPosition(const double x, const double y) { m_xPosition = x; m_yPosition = y; }
-    void setVelocity(const double x, const double y) { m_xVelocity = x; m_yVelocity = y; }
+    void addForce(QVector3D force) { m_force += force; }
+    void setPosition(QVector3D position) { m_position += position; }
+    void setVelocity(QVector3D velocity) { m_velocity = velocity; }
     void setRadius(const double& radius) { m_radius = radius; }
     void setMass(const double& mass) { m_mass = mass; }
-    void setColor(const QColor& color) { m_color = color; }
+    void setColor(QColor color) { m_color = color; }
 
 private:
-    double m_xForce;
-    double m_yForce;
-    double m_xVelocity;
-    double m_yVelocity;
-    double m_xPosition;
-    double m_yPosition;
+    QVector3D m_force;
+
+    QVector3D m_velocity;
+    QVector3D m_position;
 
     double m_radius;
     double m_mass;

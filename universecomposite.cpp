@@ -12,19 +12,19 @@ UniverseComposite::UniverseComposite(
 { }
 
 //render the subtree
-void UniverseComposite::render(QPainter& painter) const
+void UniverseComposite::render(Renderer& renderer) const
 {
     for(auto& child : m_children)
     {
-        child->render(painter);
+        child->render(renderer);
     }
 }
 
-void UniverseComposite::renderLabel(QPainter& painter) const
+void UniverseComposite::renderLabel(Renderer& renderer) const
 {
     for(auto& child : m_children)
     {
-        child->renderLabel(painter);
+        child->renderLabel(renderer);
     }
 }
 

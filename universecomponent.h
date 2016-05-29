@@ -13,6 +13,8 @@ enum UniverseComponentType { planet, star, blackhole, solarsystem, galaxy, clust
 //forward declaration
 class UniverseBody;
 
+class Renderer;
+
 class UniverseComponent {
 
 public:
@@ -24,8 +26,8 @@ public:
     virtual ~UniverseComponent() { }
 
     //composite operation: render the subtree
-    virtual void render(QPainter& painter) const = 0;
-    virtual void renderLabel(QPainter& painter) const = 0;
+    virtual void render(Renderer& renderer) const = 0;
+    virtual void renderLabel(Renderer& renderer) const = 0;
 
     //composite operation: apply the attraction from this component, to the specified leaf
     virtual void addAttractionTo(UniverseBody& other) const = 0;

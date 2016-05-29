@@ -2,6 +2,7 @@
 #define UNIVERSECOMPOSITE_H
 
 #include "universecomponent.h"
+#include "renderer.h"
 #include <string>
 #include <vector>
 #include <memory>
@@ -23,8 +24,8 @@ public:
     /*********************************************
      * Inherited methods from UniverseComponent
      * *******************************************/
-    virtual void render(QPainter& painter) const;
-    virtual void renderLabel(QPainter& painter) const;
+    virtual void render(Renderer& painter) const;
+    virtual void renderLabel(Renderer& painter) const;
     virtual void addAttractionTo(UniverseBody& other) const;
     virtual void resetForces();
     virtual void addAttractionFrom(const UniverseComponent& component);

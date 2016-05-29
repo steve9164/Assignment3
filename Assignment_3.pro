@@ -20,7 +20,8 @@ SOURCES += main.cpp\
     universecomposite.cpp \
     config.cpp \
     zodiac.cpp \
-    universecomponentfactory.cpp
+    universecomponentfactory.cpp \
+    renderer2d.cpp
 
 HEADERS  += dialog.h \
     universecomponent.h \
@@ -28,6 +29,8 @@ HEADERS  += dialog.h \
     universebody.h \
     config.h \
     zodiac.h \
-    universecomponentfactory.h
+    universecomponentfactory.h \
+    renderer.h \
+    renderer2d.h
 
 FORMS    += dialog.ui

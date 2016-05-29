@@ -2,10 +2,12 @@
 #include "ui_dialog.h"
 
 #include "universecomposite.h"
+#include "renderer2d.h"
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPushButton>
 #include <QTimer>
+#include <QOpenGLFunctions>
 
 Dialog::Dialog(QWidget *parent)
     : QOpenGLWidget(parent)
@@ -15,6 +17,7 @@ Dialog::Dialog(QWidget *parent)
     , m_paused(false)
     , m_renderZodiacs(true)
     , m_renderLabels(true)
+    , m_render3d(false)
     , m_timestamp(0)
     , m_config(Config::getInstance())
 {
@@ -67,6 +70,44 @@ void Dialog::toggleZodiacs()
 void Dialog::toggleLabels()
 {
     m_renderLabels = !m_renderLabels;
+}
+
+void abcinit() {
+    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
+    f->glClearColor(200, 0, 0, 1);
+}
+
+void Dialog::initializeGL()
+{
+    m_renderer.reset(new Renderer2D());
+}
+
+void drawSomething()
+{
+    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
+    f->glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void Dialog::paintGL()
+{
+    m_renderer->startRender(this);
+
+    if(m_renderZodiacs)
+    {
+        for(auto& zodiac : m_zodiacs)
+        {
+            zodiac.render(*m_renderer);
+        }
+    }
+
+    m_universe->render(*m_renderer);
+
+    if(m_renderLabels)
+    {
+        m_universe->renderLabel(*m_renderer);
+    }
+
+    m_renderer->finishRender();
 }
 
 void Dialog::togglePause()
@@ -122,32 +163,6 @@ void Dialog::nextFrame()
     update();
 }
 
-void Dialog::paintEvent(QPaintEvent *event)
-{
-    //suppress 'unused variable' warning
-    Q_UNUSED(event);
-
-    //redraw the universe
-    QPainter painter(this);
-
-    //offset the painter so (0,0) is the center of the window
-    painter.translate(m_width/2, m_height/2);
-
-    if(m_renderZodiacs)
-    {
-        for(auto& zodiac : m_zodiacs)
-        {
-            zodiac.render(painter);
-        }
-    }
-
-    m_universe->render(painter);
-
-    if(m_renderLabels)
-    {
-        m_universe->renderLabel(painter);
-    }
-}
 
 
 

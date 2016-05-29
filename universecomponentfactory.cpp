@@ -103,8 +103,12 @@ unique_ptr<UniverseComponent> UniverseComponentFactory::createLeaf(
     //fetch various doubles from the block. Throw errors if they are missing or invalid.
     double position_x = getDouble(block, "position_x", name, true);
     double position_y = getDouble(block, "position_y", name, true);
+    double position_z = getDouble(block, "position_z", name, false); // Not required for backwards compatibility
+
     double velocity_x = getDouble(block, "velocity_x", name, true);
     double velocity_y = getDouble(block, "velocity_y", name, true);
+    double velocity_z = getDouble(block, "velocity_z", name, false); // Also not required
+
     double radius = getDouble(block, "radius", name, true);
     double mass = getDouble(block, "mass", name, true);
 
@@ -120,10 +124,12 @@ unique_ptr<UniverseComponent> UniverseComponentFactory::createLeaf(
 
     //build the body:
     UniverseBody* component = new UniverseBody(type, name, parentName);
-    component->setPosition(position_x, position_y);
-    component->setVelocity(velocity_x, velocity_y);
+    component->setPosition(QVector3D(position_x, position_y, position_z));
+    component->setVelocity(QVector3D(velocity_x, velocity_y, velocity_z));
     component->setRadius(radius);
     component->setMass(mass);
+
+    qDebug() << "Create body at: " << component->getPosition();
 
     //use the colour argument, only if it exists
     if(block.count("color") > 0)
