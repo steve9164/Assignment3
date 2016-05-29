@@ -10,6 +10,8 @@
 #include <list>
 #include <QOpenGLWidget>
 
+class EventHandler;
+
 
 namespace Ui {
 class Dialog;
@@ -40,7 +42,7 @@ private:
     //pause (or unpause) the simulation
     void pause(bool pause);
     //handle key presses
-    void keyPressEvent(QKeyEvent *event);
+    bool event(QEvent *event);
 
 private:
     Ui::Dialog* ui;
@@ -62,6 +64,9 @@ private:
     std::list<Zodiac> m_zodiacs; //Vector of zodiac lines
     Config* m_config; //the singleton config instance
     std::unique_ptr<Renderer> m_renderer;
+    std::unique_ptr<EventHandler> m_eventHandler;
+
+    class KeyEventHandler;
 
 };
 

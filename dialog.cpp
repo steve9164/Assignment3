@@ -3,11 +3,25 @@
 
 #include "universecomposite.h"
 #include "renderer2d.h"
+#include "eventhandler.h"
 #include <QKeyEvent>
 #include <QPainter>
 #include <QPushButton>
 #include <QTimer>
 #include <QOpenGLFunctions>
+#include <QDebug>
+
+class Dialog::KeyEventHandler : public EventHandler
+{
+public:
+    KeyEventHandler(Dialog& dialog);
+    bool handleEvent(QEvent* event);
+
+private:
+    bool handleKeyEvent(QKeyEvent* event);
+
+    Dialog& m_dialog;
+};
 
 Dialog::Dialog(QWidget *parent)
     : QOpenGLWidget(parent)
@@ -20,6 +34,7 @@ Dialog::Dialog(QWidget *parent)
     , m_render3d(false)
     , m_timestamp(0)
     , m_config(Config::getInstance())
+    , m_eventHandler(new EventHandler::NoopEventHandler())
 {
     m_config->read("config.txt");
     m_universe = m_config->retrieveUniverse();
@@ -80,6 +95,11 @@ void abcinit() {
 void Dialog::initializeGL()
 {
     m_renderer.reset(new Renderer2D());
+
+    // Build Dialog event chain
+    m_eventHandler.reset(new KeyEventHandler(*this));
+    // Add renderer event chain
+    m_eventHandler->chain(m_renderer->buildEventChain());
 }
 
 void drawSomething()
@@ -129,15 +149,9 @@ void Dialog::pause(bool pause)
     }
 }
 
-void Dialog::keyPressEvent(QKeyEvent *event)
+bool Dialog::event(QEvent* event)
 {
-    switch(event->key()) {
-    case Qt::Key_Space:
-        pause(!m_paused);
-        return;
-    default:
-        return;
-    }
+    return m_eventHandler->handleEvent(event) || QOpenGLWidget::event(event);
 }
 
 void Dialog::nextFrame()
@@ -164,6 +178,42 @@ void Dialog::nextFrame()
 }
 
 
+Dialog::KeyEventHandler::KeyEventHandler(Dialog &dialog)
+    : m_dialog(dialog)
+{ }
 
+bool Dialog::KeyEventHandler::handleEvent(QEvent *event)
+{
+    QKeyEvent* keyEvent = dynamic_cast<QKeyEvent*>(event);
+    if (keyEvent && handleKeyEvent(keyEvent))
+    {
+        return true;
+    }
+    else
+    {
+        return m_next->handleEvent(event);
+    }
+}
 
-
+bool Dialog::KeyEventHandler::handleKeyEvent(QKeyEvent *event)
+{
+    if (event->isAutoRepeat())
+    {
+        return false;
+    }
+    else if (event->type() == QEvent::KeyPress)
+    {
+        switch (event->key())
+        {
+        case Qt::Key_Space:
+            m_dialog.pause(!m_dialog.m_paused);
+            return true;
+        default:
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+}

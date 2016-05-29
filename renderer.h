@@ -4,15 +4,20 @@
 #include "zodiac.h"
 #include "universebody.h"
 
+#include <memory>
+
 // Abstract renderer class
 
 class Zodiac;
+class EventHandler;
 
 class Renderer
 {
 public:
     Renderer() { }
     virtual ~Renderer() { }
+
+    virtual std::shared_ptr<EventHandler> buildEventChain() = 0;
 
     // called before each scene render
     virtual void startRender(QWidget*) { }

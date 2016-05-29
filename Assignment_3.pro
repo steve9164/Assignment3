@@ -21,7 +21,9 @@ SOURCES += main.cpp\
     config.cpp \
     zodiac.cpp \
     universecomponentfactory.cpp \
-    renderer2d.cpp
+    renderer2d.cpp \
+    eventhandler.cpp \
+    renderer2deventhandlers.cpp
 
 HEADERS  += dialog.h \
     universecomponent.h \
@@ -31,6 +33,8 @@ HEADERS  += dialog.h \
     zodiac.h \
     universecomponentfactory.h \
     renderer.h \
-    renderer2d.h
+    renderer2d.h \
+    eventhandler.h \
+    renderer2deventhandlers.h
 
 FORMS    += dialog.ui
