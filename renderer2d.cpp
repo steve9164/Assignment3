@@ -27,8 +27,10 @@ void Renderer2D::startRender(QWidget* widget)
     m_painter.reset(new QPainter(widget));
 
     //offset the painter so (0,0) is the center of the window
-    m_painter->translate(QPointF(widget->width()/2, widget->height()/2) - m_cameraPosition);
+    m_painter->translate(QPointF(widget->width()/2, widget->height()/2));
     m_painter->scale(m_cameraScale, m_cameraScale);
+    m_painter->translate(-m_cameraPosition);
+
 }
 
 void Renderer2D::drawBody(const UniverseBody& body)
