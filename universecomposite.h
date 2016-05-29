@@ -34,20 +34,18 @@ public:
     /*********************************************
      * Methods used to enable construction of the universe with relative positions
      * *******************************************/
-    void setPosition(double x, double y) { m_xPosition = x; m_yPosition = y; }
-    void setVelocity(double x, double y) { m_xVelocity = x; m_yVelocity = y; }
+    void setPosition(QVector3D position) { m_position = position; }
+    void setVelocity(QVector3D velocity) { m_velocity = velocity; }
     //propagates the position and velocity of each object down to it's children
     //this should only be called ONCE
-    void convertRelativeToAbsolute(double xp, double yp, double xv, double yv);
+    void convertRelativeToAbsolute(QVector3D p, QVector3D v);
 
 private:
     std::vector<std::unique_ptr<UniverseComponent>> m_children;
 
     //used only to enable construction of the universe with relative positions
-    double m_xVelocity;
-    double m_yVelocity;
-    double m_xPosition;
-    double m_yPosition;
+    QVector3D m_velocity;
+    QVector3D m_position;
 
 };
 

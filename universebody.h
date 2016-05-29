@@ -34,6 +34,13 @@ public:
     //update the positions of all components of this object
     virtual void updatePosition(int timestep);
 
+    //convert the initial (relative) position and velocity, to an absolute one
+    //by translating the position and velocity with the values provided
+    void convertRelativeToAbsolute(QVector3D p, QVector3D v) {
+        m_position += p;
+        m_velocity += v;
+    }
+
 
     /*********************************************
      * Accessor methods

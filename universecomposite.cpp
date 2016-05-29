@@ -5,10 +5,8 @@ UniverseComposite::UniverseComposite(
         const std::string& name,
         const std::string& parentName)
         : UniverseComponent(type, name, parentName)
-        , m_xVelocity(0.0)
-        , m_yVelocity(0.0)
-        , m_xPosition(0.0)
-        , m_yPosition(0.0)
+        , m_velocity()
+        , m_position()
 { }
 
 //render the subtree
@@ -67,15 +65,13 @@ void UniverseComposite::updatePosition(int timestep)
 
 
 
-void UniverseComposite::convertRelativeToAbsolute(double xp, double yp, double xv, double yv)
+void UniverseComposite::convertRelativeToAbsolute(QVector3D p, QVector3D v)
 {
-    xp += m_xPosition;
-    yp += m_yPosition;
-    xv += m_xVelocity;
-    yv += m_yVelocity;
+    p += m_position;
+    v += m_velocity;
     for(auto& child : m_children)
     {
-        child->convertRelativeToAbsolute(xp, yp, xv, yv);
+        child->convertRelativeToAbsolute(p, v);
     }
 }
 

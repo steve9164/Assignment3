@@ -43,7 +43,7 @@ public:
 
     //composite operation: convert relative positions to absolute positions
     //i.e. translate all child objects by the parent's position and velocity
-    virtual void convertRelativeToAbsolute(double xp, double yp, double xv, double yv) = 0;
+    virtual void convertRelativeToAbsolute(QVector3D p, QVector3D v) = 0;
 
     //accessor methods
     void setName(const std::string& name) { m_name = name; }

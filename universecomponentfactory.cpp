@@ -150,13 +150,16 @@ unique_ptr<UniverseComponent> UniverseComponentFactory::createComposite(
     //fetch various doubles from the block. Throw errors only if they are invalid
     double position_x = getDouble(block, "position_x", name, false);
     double position_y = getDouble(block, "position_y", name, false);
+    double position_z = getDouble(block, "position_z", name, false);
+
     double velocity_x = getDouble(block, "velocity_x", name, false);
     double velocity_y = getDouble(block, "velocity_y", name, false);
+    double velocity_z = getDouble(block, "velocity_z", name, false);
 
     //build the body:
     UniverseComposite* component = new UniverseComposite(type, name, parentName);
-    component->setPosition(position_x, position_y);
-    component->setVelocity(velocity_x, velocity_y);
+    component->setPosition(QVector3D(position_x, position_y, position_z));
+    component->setVelocity(QVector3D(velocity_x, velocity_y, velocity_z));
 
     return unique_ptr<UniverseComponent>(component);
 }

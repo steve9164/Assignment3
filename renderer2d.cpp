@@ -29,7 +29,7 @@ void Renderer2D::drawBody(const UniverseBody& body)
 
     if(config->getUseLogRadius())
     {
-        radius = std::log(body.getRadius());
+        radius = std::log(body.getRadius() / config->getLogPointRadius());
     }
 
     if(radius < 1)
