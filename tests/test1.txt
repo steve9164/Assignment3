@@ -1,0 +1,18 @@
+// Test1
+
+
+[settings]
+//how many times should the screen update each second
+FRAMES_PER_SECOND = 60
+//how many seconds should be simulated each time the screen is redrawn
+PHYSICS_STEP_SIZE = 40000 // 1 lunar month per 60 frames
+//split each physics step into this many sub-steps
+OVERCALCULATE_PHYSICS = 10
+//meters per pixel, between bodies
+DISTANCE_SCALE = 1.0e10
+//meters per pixel, for body radius
+RADIUS_SCALE = 1.0e7
+//use a log2 scale for object radius, instead of RADIUS_SCALE?
+USE_LOG_RADIUS = 1
+//if using log2 scale, what radius in m is ~1 pixel?
+LOG_POINT = 1.0e6
