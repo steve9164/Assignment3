@@ -31,6 +31,8 @@ public:
     virtual void addAttractionFrom(const UniverseComponent& component);
     virtual void updatePosition(int timestep);
 
+    std::pair<QVector3D, QVector3D> getBoundingBox() const;
+
     /*********************************************
      * Methods used to enable construction of the universe with relative positions
      * *******************************************/

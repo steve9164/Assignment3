@@ -34,6 +34,8 @@ private slots:
     void toggleZodiacs();
     //toggle rendering of labels
     void toggleLabels();
+    //auto-adjust view
+    void autoAdjust();
 
 private:
     void initializeGL();
@@ -52,6 +54,7 @@ private:
     QPushButton* m_buttonPause;
     QPushButton* m_buttonZodiacs;
     QPushButton* m_buttonLabels;
+    QPushButton* m_buttonAutoAdjust;
 
     int m_width; //width of the window
     int m_height; //height of the window

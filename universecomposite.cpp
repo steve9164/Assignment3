@@ -1,5 +1,9 @@
 #include "universecomposite.h"
 
+#include <algorithm>
+#include <iterator>
+#include <QDebug>
+
 UniverseComposite::UniverseComposite(
         UniverseComponentType type,
         const std::string& name,
@@ -62,7 +66,50 @@ void UniverseComposite::updatePosition(int timestep)
     }
 }
 
+// Compare the Nth dimension of the min in the pair
+struct CompMin
+{
+    int n;
+    CompMin(int n): n(n) { }
+    bool operator() (const std::pair<QVector3D, QVector3D>& a, const std::pair<QVector3D, QVector3D>& b)
+    {
+        // pairs are {min, max}
+        return a.first[n] < b.first[n];
+    }
+};
 
+
+
+// Compare the Nth dimension of the max in the pair
+struct CompMax
+{
+    int n;
+    CompMax(int n): n(n) { }
+    bool operator() (const std::pair<QVector3D, QVector3D>& a, const std::pair<QVector3D, QVector3D>& b)
+    {
+        // pairs are {min, max}
+        return a.second[n] < b.second[n];
+    }
+};
+
+std::pair<QVector3D, QVector3D> UniverseComposite::getBoundingBox() const
+{
+    if (m_children.size() == 0)
+        return {QVector3D(), QVector3D()};
+    // Get bounding boxes of children
+    std::vector<std::pair<QVector3D, QVector3D>> boundingBoxes;
+    std::transform(m_children.begin(), m_children.end(), std::back_inserter(boundingBoxes),
+                   [](const std::unique_ptr<UniverseComponent>& a) { return a->getBoundingBox(); });
+    qDebug() << boundingBoxes.size() << m_children.size();
+    // Calculate overall bounding box
+    QVector3D min, max;
+    for (int i = 0; i < 3; i++)
+    {
+        min[i] = std::min_element(boundingBoxes.begin(), boundingBoxes.end(), CompMin(i))->first[i];
+        max[i] = std::max_element(boundingBoxes.begin(), boundingBoxes.end(), CompMax(i))->second[i];
+    }
+    return {min, max};
+}
 
 
 void UniverseComposite::convertRelativeToAbsolute(QVector3D p, QVector3D v)

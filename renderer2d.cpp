@@ -5,6 +5,7 @@
 #include <QGradient>
 #include <QWidget>
 #include <QDebug>
+#include <algorithm>
 
 Renderer2D::Renderer2D()
     : m_cameraScale(1.0f),
@@ -19,9 +20,21 @@ std::shared_ptr<EventHandler> Renderer2D::buildEventChain()
     return handler;
 }
 
+void Renderer2D::autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox)
+{
+    Config* config = Config::getInstance();
+
+    QVector2D min = boundingBox.first.toVector2D();
+    QVector2D max = boundingBox.second.toVector2D();
+    QVector2D diag = (max-min) / config->getDistanceScale();
+    m_cameraPosition = (min/config->getDistanceScale() + diag/2).toPointF();
+    m_cameraScale = std::min(0.8*m_widget->width()/diag.x(), 0.8*m_widget->height()/diag.y());
+}
+
 
 void Renderer2D::startRender(QWidget* widget)
 {
+    m_widget = widget;
     m_cameraPosition += m_cameraVelocity;
     // Make a new QPainter to render on widget
     m_painter.reset(new QPainter(widget));

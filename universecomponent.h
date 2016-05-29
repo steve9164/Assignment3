@@ -51,6 +51,9 @@ public:
     const std::string& getParentName() const { return m_parentName; }
     UniverseComponentType getType() const { return m_type; }
 
+    // Calculate a minimal bounding box of this component
+    virtual std::pair<QVector3D, QVector3D> getBoundingBox() const = 0;
+
 private:
     UniverseComponentType m_type;
     std::string m_name;

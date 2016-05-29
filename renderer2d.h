@@ -15,6 +15,7 @@ public:
 
     // Renderer interface
     std::shared_ptr<EventHandler> buildEventChain();
+    void autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox);
 
 
     void startRender(QWidget* widget);

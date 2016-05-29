@@ -41,6 +41,12 @@ public:
         m_velocity += v;
     }
 
+    std::pair<QVector3D, QVector3D> getBoundingBox() const {
+        QVector3D size(m_radius, m_radius, m_radius);
+        return { m_position - size, m_position + size};
+
+    }
+
 
     /*********************************************
      * Accessor methods

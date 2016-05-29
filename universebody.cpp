@@ -74,4 +74,3 @@ void UniverseBody::updatePosition(int timestep)
      m_position += (m_velocity + oldVelocity)/2 * timestep;
 
 }
-
