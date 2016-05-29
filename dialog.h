@@ -37,6 +37,10 @@ private slots:
     //auto-adjust view
     void autoAdjust();
 
+    // adjust physics simulation rate
+    void slower();
+    void faster();
+
 private:
     void initializeGL();
     //method called when the window is being redrawn
@@ -55,6 +59,8 @@ private:
     QPushButton* m_buttonZodiacs;
     QPushButton* m_buttonLabels;
     QPushButton* m_buttonAutoAdjust;
+    QPushButton* m_buttonSlower;
+    QPushButton* m_buttonFaster;
 
     int m_width; //width of the window
     int m_height; //height of the window

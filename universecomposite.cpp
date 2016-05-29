@@ -96,11 +96,12 @@ std::pair<QVector3D, QVector3D> UniverseComposite::getBoundingBox() const
 {
     if (m_children.size() == 0)
         return {QVector3D(), QVector3D()};
+
     // Get bounding boxes of children
     std::vector<std::pair<QVector3D, QVector3D>> boundingBoxes;
     std::transform(m_children.begin(), m_children.end(), std::back_inserter(boundingBoxes),
                    [](const std::unique_ptr<UniverseComponent>& a) { return a->getBoundingBox(); });
-    qDebug() << boundingBoxes.size() << m_children.size();
+
     // Calculate overall bounding box
     QVector3D min, max;
     for (int i = 0; i < 3; i++)

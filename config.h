@@ -31,6 +31,9 @@ public:
     //how many seconds should be simulated each time the physics is updated
     int getPhysicsStepSize() const { return m_physicsStepSize; }
 
+    //how many seconds should be simulated each time the physics is updated
+    void setPhysicsStepSize(int stepSize) { m_physicsStepSize = stepSize; }
+
     //split each physics step into this many sub-steps
     int getOvercalculatePhysicsAmount() const { return m_overcalculatePhysics; }
 

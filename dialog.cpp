@@ -56,14 +56,20 @@ Dialog::Dialog(QWidget *parent)
     m_buttonZodiacs = new QPushButton("Zodiacs", this);
     m_buttonLabels = new QPushButton("Labels", this);
     m_buttonAutoAdjust = new QPushButton("Auto-adjust", this);
+    m_buttonSlower = new QPushButton("Slower", this);
+    m_buttonFaster = new QPushButton("Faster", this);
     m_buttonPause->setGeometry(QRect(QPoint(0, 0), QSize(100, 50)));
     m_buttonZodiacs->setGeometry(QRect(QPoint(100, 0), QSize(100, 50)));
     m_buttonLabels->setGeometry(QRect(QPoint(200, 0), QSize(100, 50)));
     m_buttonAutoAdjust->setGeometry(QRect(QPoint(300, 0), QSize(100, 50)));
+    m_buttonSlower->setGeometry(QRect(QPoint(400, 0), QSize(100, 50)));
+    m_buttonFaster->setGeometry(QRect(QPoint(500, 0), QSize(100, 50)));
     connect(m_buttonPause, SIGNAL(released()), this, SLOT(togglePause()));
     connect(m_buttonZodiacs, SIGNAL(released()), this, SLOT(toggleZodiacs()));
     connect(m_buttonLabels, SIGNAL(released()), this, SLOT(toggleLabels()));
     connect(m_buttonAutoAdjust, SIGNAL(released()), this, SLOT(autoAdjust()));
+    connect(m_buttonSlower, SIGNAL(released()), this, SLOT(slower()));
+    connect(m_buttonFaster, SIGNAL(released()), this, SLOT(faster()));
 
     //setup timer
     m_timer = new QTimer(this);
@@ -92,9 +98,19 @@ void Dialog::toggleLabels()
 
 void Dialog::autoAdjust()
 {
-    std::pair<QVector3D, QVector3D> boundingBox = m_universe->getBoundingBox();
-    qDebug() << "Bounding box:" << boundingBox.first << "," << boundingBox.second;
-    m_renderer->autoAdjustCamera(boundingBox);
+    m_renderer->autoAdjustCamera(m_universe->getBoundingBox());
+}
+
+void Dialog::slower()
+{
+    // Slow physics rate by 1.5 times and round to integer
+    m_config->setPhysicsStepSize(m_config->getPhysicsStepSize()*0.66 + 0.5);
+}
+
+void Dialog::faster()
+{
+    // Speed up physics rate by 1.5 times and round to integer
+    m_config->setPhysicsStepSize(m_config->getPhysicsStepSize()*1.5 + 0.5);
 }
 
 void abcinit() {
