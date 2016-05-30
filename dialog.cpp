@@ -3,6 +3,7 @@
 
 #include "universecomposite.h"
 #include "renderer2d.h"
+#include "renderer3d.h"
 #include "eventhandler.h"
 #include <QKeyEvent>
 #include <QPainter>
@@ -10,6 +11,7 @@
 #include <QTimer>
 #include <QOpenGLFunctions>
 #include <QDebug>
+#include <QSurfaceFormat>
 
 class Dialog::KeyEventHandler : public EventHandler
 {
@@ -120,7 +122,14 @@ void abcinit() {
 
 void Dialog::initializeGL()
 {
-    m_renderer.reset(new Renderer2D());
+    if (m_render3d)
+    {
+        QSurfaceFormat fmt;
+        fmt.setVersion( 3, 3 );
+        fmt.setProfile( QSurfaceFormat::CoreProfile );
+        setFormat( fmt );
+    }
+    m_renderer.reset(m_render3d ? static_cast<Renderer*>(new Renderer3D()) : static_cast<Renderer*>(new Renderer2D()));
 
     // Build Dialog event chain
     m_eventHandler.reset(new KeyEventHandler(*this));
