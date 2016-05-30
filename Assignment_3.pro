@@ -23,7 +23,9 @@ SOURCES += main.cpp\
     universecomponentfactory.cpp \
     renderer2d.cpp \
     eventhandler.cpp \
-    renderer2deventhandlers.cpp
+    renderer2deventhandlers.cpp \
+    renderer3d.cpp \
+    renderer3deventhandlers.cpp
 
 HEADERS  += dialog.h \
     universecomponent.h \
@@ -35,6 +37,8 @@ HEADERS  += dialog.h \
     renderer.h \
     renderer2d.h \
     eventhandler.h \
-    renderer2deventhandlers.h
+    renderer2deventhandlers.h \
+    renderer3d.h \
+    renderer3deventhandlers.h
 
 FORMS    += dialog.ui
