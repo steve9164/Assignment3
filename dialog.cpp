@@ -12,6 +12,7 @@
 #include <QOpenGLFunctions>
 #include <QDebug>
 #include <QSurfaceFormat>
+#include <QOpenGLDebugLogger>
 
 class Dialog::KeyEventHandler : public EventHandler
 {
@@ -33,7 +34,7 @@ Dialog::Dialog(QWidget *parent)
     , m_paused(false)
     , m_renderZodiacs(true)
     , m_renderLabels(true)
-    , m_render3d(false)
+    , m_render3d(true)
     , m_timestamp(0)
     , m_config(Config::getInstance())
     , m_eventHandler(new EventHandler::NoopEventHandler())
@@ -122,18 +123,11 @@ void abcinit() {
 
 void Dialog::initializeGL()
 {
-    m_renderer.reset(m_render3d ? static_cast<Renderer*>(new Renderer3D()) : static_cast<Renderer*>(new Renderer2D()));
-
+    m_renderer.reset(m_render3d ? static_cast<Renderer*>(new Renderer3D(this)) : static_cast<Renderer*>(new Renderer2D()));
     // Build Dialog event chain
     m_eventHandler.reset(new KeyEventHandler(*this));
     // Add renderer event chain
     m_eventHandler->chain(m_renderer->buildEventChain());
-}
-
-void drawSomething()
-{
-    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void Dialog::paintGL()

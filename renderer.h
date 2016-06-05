@@ -17,6 +17,8 @@ public:
     Renderer() { }
     virtual ~Renderer() { }
 
+    //virtual void initialise() { }
+
     virtual std::shared_ptr<EventHandler> buildEventChain() = 0;
     virtual void autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox) { }
 

@@ -11,6 +11,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLBuffer>
 #include <QOpenGLVertexArrayObject>
+#include <QOpenGLWidget>
 
 // Unfinished extension functionality
 
@@ -18,11 +19,12 @@
 class Renderer3D : public Renderer
 {
 public:
-    Renderer3D();
+    Renderer3D(QOpenGLWidget* widget);
 
     ~Renderer3D();
 
     // Renderer interface
+    //void initialise();
     std::shared_ptr<EventHandler> buildEventChain();
     void autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox);
 
@@ -40,17 +42,18 @@ private:
     QMatrix4x4 m_proj;
     QVector3D m_cameraVelocity;
 
-    std::unique_ptr<QOpenGLShaderProgram> m_program;
+    /*std::unique_ptr<QOpenGLShaderProgram>*/ QOpenGLShaderProgram*  m_program;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_cubeVertices;
     QOpenGLBuffer m_cubeIndices;
+    QOpenGLBuffer m_cubeLocations;
+    QOpenGLBuffer m_cubeSizes;
     GLuint m_viewMatrixLoc;
     GLuint m_projMatrixLoc;
 
     // Event handlers (in renderer3deventhandlers.h)
     class KeyEventHandler;
-    class MouseWheelEventHandler;
-
+    class MouseWheelEventHandler;  
 };
 
 #endif // RENDERER3D_H
