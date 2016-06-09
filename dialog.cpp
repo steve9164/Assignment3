@@ -116,13 +116,9 @@ void Dialog::faster()
     m_config->setPhysicsStepSize(m_config->getPhysicsStepSize()*1.5 + 0.5);
 }
 
-void abcinit() {
-    QOpenGLFunctions* f = QOpenGLContext::currentContext()->functions();
-    f->glClearColor(200, 0, 0, 1);
-}
-
 void Dialog::initializeGL()
 {
+    qDebug() << "initializeGL()";
     m_renderer.reset(m_render3d ? static_cast<Renderer*>(new Renderer3D(this)) : static_cast<Renderer*>(new Renderer2D()));
     // Build Dialog event chain
     m_eventHandler.reset(new KeyEventHandler(*this));

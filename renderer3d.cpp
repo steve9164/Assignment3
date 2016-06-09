@@ -32,10 +32,14 @@ static const char *fragmentShaderSourceCore =
 Renderer3D::Renderer3D(QOpenGLWidget* widget)
     : m_view(),
       m_cameraVelocity(),
-      m_program(new QOpenGLShaderProgram),
+      m_program(),
       m_cubeIndices(QOpenGLBuffer::IndexBuffer),
-      m_cubeLocations()
+      m_cubeLocations(),
+      m_widget(widget)
 {
+    qDebug() << "Test";
+    qDebug() << initializeOpenGLFunctions();
+    m_program = new QOpenGLShaderProgram();
     m_view.setToIdentity();
     m_view.translate(0, 0, -10);
 
@@ -78,9 +82,7 @@ Renderer3D::Renderer3D(QOpenGLWidget* widget)
     m_program->enableAttributeArray("position");
     m_program->setAttributeBuffer("position", GL_FLOAT, 0, 3, sizeof(QVector3D));
 
-    QOpenGLFunctions_3_3_Core* f = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-
-    f->glVertexAttribDivisor(m_program->attributeLocation("position"), 1);
+    glVertexAttribDivisor(m_program->attributeLocation("position"), 1);
 
     std::array<float, 4> sizes{{0.5f, 0.25f, 1.25f, 1.5f}};
 
@@ -93,7 +95,7 @@ Renderer3D::Renderer3D(QOpenGLWidget* widget)
     m_program->setAttributeBuffer("scale", GL_FLOAT, 0, 1, sizeof(float));
 
 
-    f->glVertexAttribDivisor(m_program->attributeLocation("scale"), 1);
+    glVertexAttribDivisor(m_program->attributeLocation("scale"), 1);
 
     m_program->release();
 }
@@ -117,40 +119,24 @@ void Renderer3D::autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox)
 
 void Renderer3D::startRender(QWidget* widget)
 {
-//    m_cubeVertices.bind();
-//    m_cubeIndices.bind();
-    m_widget = widget;
-    m_view.translate(-m_cameraVelocity);
-
-//    m_view.setToIdentity();
-
-//    m_view.translate(0,0,-6);
-
-
-    m_proj.setToIdentity();
-    m_proj.perspective(45.0f, GLfloat(widget->width()) / widget->height(), 0.01f, 100.0f);
-
-    QOpenGLFunctions_3_3_Core* f = QOpenGLContext::currentContext()->versionFunctions<QOpenGLFunctions_3_3_Core>();
-    f->glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    f->glEnable(GL_DEPTH_TEST);
-    f->glEnable(GL_CULL_FACE);
-
-    // Bind m_vao and release when vaoBinder goes out of scope
-    QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
-
-    m_program->bind();
-    m_program->setUniformValue(m_projMatrixLoc, m_proj);
-    m_program->setUniformValue(m_viewMatrixLoc, m_view);
-
-
-    // Draw cube geometry using indices from VBO 1
-    f->glDrawElementsInstanced(GL_TRIANGLE_STRIP, 16, GL_UNSIGNED_SHORT, 0, 4);
-
-    m_program->release();
+    // Clear previous frame's Body details
+    m_bodyRenderDetailsAccumulator.clear();
 }
 
 void Renderer3D::drawBody(const UniverseBody& body)
 {
+    Config* config = Config::getInstance();
+
+    //get scaled position and radius
+    QVector3D pos = body.getPosition() / config->getDistanceScale();
+    double radius = body.getRadius() / config->getRadiusScale();
+
+    if(config->getUseLogRadius())
+    {
+        radius = std::log(body.getRadius() / config->getLogPointRadius());
+    }
+
+    m_bodyRenderDetailsAccumulator.emplace_back(pos, radius, body.getColor());
 }
 
 void Renderer3D::drawZodiac(const Zodiac& zodiac)
@@ -164,4 +150,26 @@ void Renderer3D::drawLabel(const UniverseBody& body)
 
 void Renderer3D::finishRender()
 {
+    m_view.translate(-m_cameraVelocity);
+
+    m_proj.setToIdentity();
+    m_proj.perspective(45.0f, GLfloat(widget->width()) / widget->height(), 0.01f, 100.0f);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
+
+    // Bind m_vao and release when vaoBinder goes out of scope
+    QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
+
+    m_program->bind();
+    m_program->setUniformValue(m_projMatrixLoc, m_proj);
+    m_program->setUniformValue(m_viewMatrixLoc, m_view);
+
+
+
+    // Draw cube geometry using indices from VBO 1
+    glDrawElementsInstanced(GL_TRIANGLE_STRIP, 16, GL_UNSIGNED_SHORT, 0, 4);
+
+    m_program->release();
 }

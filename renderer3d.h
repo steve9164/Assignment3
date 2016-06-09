@@ -4,6 +4,9 @@
 #include "renderer.h"
 #include "eventhandler.h"
 #include <memory>
+#include <vector>
+
+
 #include <QPainter>
 #include <QKeyEvent>
 #include <QMatrix4x4>
@@ -13,10 +16,14 @@
 #include <QOpenGLVertexArrayObject>
 #include <QOpenGLWidget>
 
+#include <QOpenGLFunctions_3_3_Core>
+
 // Unfinished extension functionality
 
+class BodyRenderDetails;
 
-class Renderer3D : public Renderer
+
+class Renderer3D : public Renderer, protected QOpenGLFunctions_3_3_Core
 {
 public:
     Renderer3D(QOpenGLWidget* widget);
@@ -36,11 +43,14 @@ public:
     void finishRender();
 
 private:
-    QWidget* m_widget;
+    QOpenGLWidget* m_widget;
     std::unique_ptr<QPainter> m_painter;
     QMatrix4x4 m_view;
     QMatrix4x4 m_proj;
     QVector3D m_cameraVelocity;
+
+    // Temporaries for collecting
+    std::vector<BodyRenderDetails> m_bodyRenderDetailsAccumulator;
 
     /*std::unique_ptr<QOpenGLShaderProgram>*/ QOpenGLShaderProgram*  m_program;
     QOpenGLVertexArrayObject m_vao;
