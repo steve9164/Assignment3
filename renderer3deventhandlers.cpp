@@ -93,7 +93,9 @@ bool Renderer3D::MouseWheelEventHandler::handleMouseWheelEvent(QWheelEvent* even
 {
     if (!event->angleDelta().isNull())
     {
-        m_renderer.m_view.translate(0, 0, (event->angleDelta().y() / CAMERA_ZOOM_FACTOR));
+        QMatrix4x4 tr;
+        tr.translate(0, 0, (event->angleDelta().y() / CAMERA_ZOOM_FACTOR));
+        m_renderer.m_view = tr * m_renderer.m_view;
         return true;
     }
     else

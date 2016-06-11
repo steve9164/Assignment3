@@ -10,28 +10,33 @@
 #include <QDebug>
 #include <QSurfaceFormat>
 #include <QOpenGLFunctions_3_3_Core>
+#include <QQuaternion>
 
-static const char *vertexShaderSourceCore =
-    "#version 330\n"
-    "in vec4 vertex;\n"
-    "in vec3 position;\n"
-    "in float scale;\n"
-    "in vec4 vertexColor;\n"
-    "out vec4 fragmentColor;\n"
-    "uniform mat4 projMatrix;\n"
-    "uniform mat4 viewMatrix;\n"
-    "void main() {\n"
-    "    gl_Position = projMatrix * viewMatrix * vec4(scale*vertex.xyz + position, 1);\n"
-    "    fragmentColor = vertexColor;\n"
-    "}\n";
+// Use C++11 raw string literals for GLSL shader source code
 
-static const char *fragmentShaderSourceCore =
-    "#version 330\n"
-    "in vec4 fragmentColor;\n"
-    "out vec4 color;\n"
-    "void main() {\n"
-    "   color = fragmentColor;\n"
-    "}\n";
+static const char *vertexShaderSourceCore = R"(
+    #version 330
+    in vec4 vertex;
+    in vec3 position;
+    in float scale;
+    in vec4 vertexColor;
+    out vec4 fragmentColor;
+    uniform mat4 projMatrix;
+    uniform mat4 viewMatrix;
+    void main() {
+        gl_Position = projMatrix * viewMatrix * vec4(scale*vertex.xyz + position, 1);
+        fragmentColor = vertexColor;
+    }
+)";
+
+static const char *fragmentShaderSourceCore = R"(
+    #version 330
+    in vec4 fragmentColor;
+    out vec4 color;
+    void main() {
+       color = fragmentColor;
+    }
+)";
 
 struct Renderer3D::BodyRenderDetails
 {
@@ -86,7 +91,7 @@ Renderer3D::Renderer3D(QOpenGLWidget* widget)
     m_cubeInstanceData.bind(); // All of the attributes below are in this vbo
 
     // Compile time assertion that struct BodyRenderDetails is laid out as assumed
-    static_assert (sizeof(struct BodyRenderDetails) == 8*sizeof(float), "Renderer3D::BodyRenderDetails size is not correct");
+    static_assert(sizeof(struct BodyRenderDetails) == 8*sizeof(float), "Renderer3D::BodyRenderDetails layout is not correct. Should be 3 floats | 1 float | 4 floats = 8 floats overall");
 
     m_program->enableAttributeArray("position");
     m_program->setAttributeBuffer("position", GL_FLOAT, 0, 3, sizeof(struct BodyRenderDetails));
@@ -94,17 +99,17 @@ Renderer3D::Renderer3D(QOpenGLWidget* widget)
     glVertexAttribDivisor(m_program->attributeLocation("position"), 1);
 
     m_program->enableAttributeArray("scale");
-    m_program->setAttributeBuffer("scale", GL_FLOAT, 3, 1, sizeof(struct BodyRenderDetails));
+    m_program->setAttributeBuffer("scale", GL_FLOAT, 3*sizeof(float), 1, sizeof(struct BodyRenderDetails));
     glVertexAttribDivisor(m_program->attributeLocation("scale"), 1);
 
     m_program->enableAttributeArray("vertexColor");
-    m_program->setAttributeBuffer("vertexColor", GL_FLOAT, 4, 4, sizeof(struct BodyRenderDetails));
+    m_program->setAttributeBuffer("vertexColor", GL_FLOAT, 4*sizeof(float), 4, sizeof(struct BodyRenderDetails));
     glVertexAttribDivisor(m_program->attributeLocation("vertexColor"), 1);
 
-
-
-
     m_program->release();
+
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_CULL_FACE);
 }
 
 Renderer3D::~Renderer3D()
@@ -122,6 +127,7 @@ std::shared_ptr<EventHandler> Renderer3D::buildEventChain()
 
 void Renderer3D::autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox)
 {
+    m_view.setToIdentity();
 }
 
 void Renderer3D::startRender(QWidget* widget)
@@ -145,7 +151,8 @@ void Renderer3D::drawBody(const UniverseBody& body)
     double r,g,b,a;
     body.getColor().getRgbF(&r,&g,&b,&a);
 
-    //qDebug() << pos << radius << QVector4D(r,g,b,a);
+//    qDebug() << pos << radius << QVector4D(r,g,b,a);
+//    qDebug() << "Radius:" << body.getRadius() << config->getRadiusScale() << config->getUseLogRadius();
 
     m_bodyRenderDetailsAccumulator.push_back({pos, static_cast<float>(radius), QVector4D(r,g,b,a)});
 }
@@ -161,27 +168,23 @@ void Renderer3D::drawLabel(const UniverseBody& body)
 
 void Renderer3D::finishRender()
 {
-    m_view.translate(-m_cameraVelocity);
+//    m_view.translate(-m_cameraVelocity);
+
+    // V[n+1] = Rotation[inv] * V[n]
+    // Qt can't invert a matrix, so invert a quaternion
+    QMatrix4x4 rot;
+    rot.rotate(1.0f, QVector3D(-m_cameraVelocity.y(), m_cameraVelocity.x(), 0.0f));
+    m_view = rot * m_view;
 
     m_proj.setToIdentity();
-    m_proj.perspective(45.0f, (GLfloat)m_widget->width() / m_widget->height(), 0.01f, 100.0f);
+    m_proj.perspective(45.0f, (GLfloat)m_widget->width() / m_widget->height(), 0.01f, 1000.0f);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
 
     // Bind m_vao and release when vaoBinder goes out of scope
     QOpenGLVertexArrayObject::Binder vaoBinder(&m_vao);
 
     // Test m_bodyRenderDetailsAccumulator.data():
-
-    float* data = (float*)(void*)m_bodyRenderDetailsAccumulator.data();
-    qDebug() << "Printing m_bodyRenderDetailsAccumulator:";
-    while (data < (float*)(m_bodyRenderDetailsAccumulator.data()+m_bodyRenderDetailsAccumulator.size()))
-    {
-        qDebug() << *data << *(data+1) << *(data+2) << *(data+3) << *(data+4) << *(data+5) << *(data+6) << *(data+7);
-        data += 8;
-    }
 
     m_cubeInstanceData.bind();
     m_cubeInstanceData.allocate(m_bodyRenderDetailsAccumulator.data(), m_bodyRenderDetailsAccumulator.size() * sizeof(struct BodyRenderDetails));
