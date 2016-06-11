@@ -20,9 +20,6 @@
 
 // Unfinished extension functionality
 
-class BodyRenderDetails;
-
-
 class Renderer3D : public Renderer, protected QOpenGLFunctions_3_3_Core
 {
 public:
@@ -50,14 +47,14 @@ private:
     QVector3D m_cameraVelocity;
 
     // Temporaries for collecting
+    struct BodyRenderDetails;
     std::vector<BodyRenderDetails> m_bodyRenderDetailsAccumulator;
 
     /*std::unique_ptr<QOpenGLShaderProgram>*/ QOpenGLShaderProgram*  m_program;
     QOpenGLVertexArrayObject m_vao;
     QOpenGLBuffer m_cubeVertices;
     QOpenGLBuffer m_cubeIndices;
-    QOpenGLBuffer m_cubeLocations;
-    QOpenGLBuffer m_cubeSizes;
+    QOpenGLBuffer m_cubeInstanceData;
     GLuint m_viewMatrixLoc;
     GLuint m_projMatrixLoc;
 

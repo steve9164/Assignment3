@@ -118,7 +118,8 @@ void Dialog::faster()
 
 void Dialog::initializeGL()
 {
-    qDebug() << "initializeGL()";
+//    qDebug() << "initializeGL()";
+//    qDebug() << context()->format();
     m_renderer.reset(m_render3d ? static_cast<Renderer*>(new Renderer3D(this)) : static_cast<Renderer*>(new Renderer2D()));
     // Build Dialog event chain
     m_eventHandler.reset(new KeyEventHandler(*this));

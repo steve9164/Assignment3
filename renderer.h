@@ -20,7 +20,7 @@ public:
     //virtual void initialise() { }
 
     virtual std::shared_ptr<EventHandler> buildEventChain() = 0;
-    virtual void autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox) { }
+    virtual void autoAdjustCamera(std::pair<QVector3D, QVector3D> boundingBox) {Q_UNUSED(boundingBox) }
 
     // called before each scene render
     virtual void startRender(QWidget*) { }
